@@ -4,7 +4,7 @@ import { signInScreenShots, welcomeScreenShots } from "~/Utilities";
 
 export default function Home() {
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-start lg:max-w-screen-xl md:max-w-screen-lg max-w-screen-sm mx-auto ">
+    <div className="w-full min-h-screen flex flex-col items-center justify-start lg:max-w-screen-xl md:max-w-screen-lg max-w-screen-sm mx-auto pb-20">
       <TopBar />
 
       <div className="w-full flex flex-col items-center justify-start my-4">
