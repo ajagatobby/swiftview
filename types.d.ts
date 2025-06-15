@@ -2,6 +2,7 @@ interface VideoPlayerProps {
   url: string;
   playing: boolean;
   setPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+  autoPlay: boolean;
 }
 
 interface PauseProps extends SVGProps<SVGSVGElement> {

@@ -4,7 +4,12 @@ import ReactPlayer from "react-player";
 import { Pause, Play } from "./icons";
 import { motion, AnimatePresence } from "framer-motion";
 
-const VideoPlayer = ({ url, playing, setPlaying }: VideoPlayerProps) => {
+const VideoPlayer = ({
+  url,
+  playing,
+  setPlaying,
+  autoPlay,
+}: VideoPlayerProps) => {
   return (
     <div className="relative w-full h-full">
       <ReactPlayer
@@ -12,6 +17,7 @@ const VideoPlayer = ({ url, playing, setPlaying }: VideoPlayerProps) => {
         width="100%"
         height="100%"
         playing={playing}
+        autoPlay={autoPlay}
         loop
         muted
         className="rounded-xl"

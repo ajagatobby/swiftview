@@ -10,8 +10,9 @@ const Section = ({ sectionTitle, screenShots }: SectionProps) => {
       </div>
 
       <div className="w-full grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2  gap-1 my-2 lg:px-0 px-4">
-        {screenShots.map((screenShot) => (
+        {screenShots.map((screenShot, index) => (
           <Card
+            index={index}
             title={screenShot.title}
             image={screenShot.image}
             link={screenShot.link}
