@@ -1,73 +1,59 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink } from "../icons";
 import VideoPlayer from "../video-player";
-import { useEffect, useState } from "react";
+import { generateVideoId } from "../../store/video-store";
+import { cn } from "~/Utilities";
 
 interface CardProps {
   index: number;
   title: string;
-  image: string;
-  link: string;
-  appName: string;
   videoUrl: string;
+  largeCard?: boolean;
+  isPro?: boolean;
 }
 
-const Card = ({ title, image, link, appName, videoUrl, index }: CardProps) => {
-  const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    if (index === 0) {
-      setPlaying(true);
-    }
-  }, [index]);
+const Card = ({
+  title,
+  videoUrl,
+  index,
+  largeCard = false,
+  isPro = false,
+}: CardProps) => {
+  const videoId = generateVideoId(index, videoUrl);
 
   return (
-    <div className="w-full bg-[#FAFAFA] rounded-2xl px-2 py-3 border border-gray-500/10 hover:shadow-lg hover:shadow-black/5 transition-all duration-300">
-      <div className="flex items-center justify-end gap-2 w-full pb-2">
-        {image === "logo" ? (
-          <div className="w-6 h-6 bg-stone-900 border border-stone-900 rounded-sm flex items-center justify-center">
-            <Image src="/swift.png" alt="logo" width={24} height={24} />
-          </div>
-        ) : (
-          <Image
-            src={`/logos/${image}`}
-            width={20}
-            height={20}
-            className="rounded-sm"
-            alt={appName}
-          />
-        )}
-        <p className="text-sm text-black/80">{appName}</p>
-      </div>
+    <div className="w-full overflow-hidden bg-[#FAFAFA] rounded-2xl px-2 py-3 border border-gray-500/10 hover:shadow-lg hover:shadow-black/5 transition-all duration-300 group">
       <div className="py-1">
-        <div className="w-full bg-white rounded-xl h-[500px]">
+        <div
+          className={cn(
+            "w-full bg-white rounded-xl",
+            largeCard ? "h-[620px]" : "h-[500px]"
+          )}
+        >
           <div className="relative w-full h-full group">
             <div className="absolute top-0 left-0 w-full h-full rounded-xl">
               <VideoPlayer
                 url={videoUrl}
-                playing={playing}
-                setPlaying={setPlaying}
+                videoId={videoId}
                 autoPlay={index === 0}
               />
             </div>
+            {isPro && (
+              <div className="absolute top-3 right-3 z-10">
+                <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg border border-white/20">
+                  PRO
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 pt-2 justify-between w-full">
-          <p className="text-[14px] text-black/70 truncate">{title}</p>
-
-          {/* Github icon */}
-          <Link href={link} target="_blank">
-            <ExternalLink
-              size={14}
-              color="#00000080"
-              className="text-black/90 hover:text-black cursor-pointor transition-all duration-300"
-            />
-          </Link>
-        </div>
+      <div className="flex items-center justify-between p-1">
+        <Link href={`/detail/${index}`} className="w-full group">
+          <p className="text-[16px] text-black/70 truncate group-hover:text-black/90 transition-all duration-200 font-normal">
+            {title}
+          </p>
+        </Link>
       </div>
     </div>
   );
