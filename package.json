@@ -10,9 +10,11 @@
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev",
     "db:studio": "npx prisma studio",
-    "db:push": "npx prisma db push"
+    "db:push": "npx prisma db push",
+    "db:seed": "tsx lib/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "6.15.0",
     "@types/prismjs": "^1.26.5",
     "@vercel/analytics": "^1.5.0",
     "clsx": "^2.1.1",
@@ -42,7 +44,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "prisma": "6.15.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }

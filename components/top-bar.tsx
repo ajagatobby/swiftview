@@ -15,13 +15,15 @@ const navigationItems = [
   {
     href: "/request-app",
     label: "Request App",
-  },
-  {
-    href: "/mini-apps",
-    label: "Mini Apps",
     badge: "New",
     badgeVariant: "blue",
   },
+  // {
+  //   href: "/mini-apps",
+  //   label: "Mini Apps",
+  //   badge: "New",
+  //   badgeVariant: "blue",
+  // },
   {
     href: "/animations",
     label: "Animations",

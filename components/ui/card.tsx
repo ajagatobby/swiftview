@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import VideoPlayer from "../video-player";
 import { generateVideoId } from "../../store/video-store";
 import { cn } from "~/Utilities";
@@ -8,6 +8,7 @@ interface CardProps {
   index: number;
   title: string;
   videoUrl: string;
+  link: string;
   largeCard?: boolean;
   isPro?: boolean;
 }
@@ -15,14 +16,30 @@ interface CardProps {
 const Card = ({
   title,
   videoUrl,
+  link,
   index,
   largeCard = false,
   isPro = false,
 }: CardProps) => {
   const videoId = generateVideoId(index, videoUrl);
+  const router = useRouter();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if the click is not on the video player or its controls
+    const target = e.target as HTMLElement;
+    const isVideoPlayer =
+      target.closest("[data-video-player]") || target.closest(".react-player");
+
+    if (!isVideoPlayer) {
+      router.push(link);
+    }
+  };
 
   return (
-    <div className="w-full overflow-hidden bg-[#FAFAFA] rounded-2xl px-2 py-3 border border-gray-500/10 hover:shadow-lg hover:shadow-black/5 transition-all duration-300 group">
+    <div
+      onClick={handleCardClick}
+      className="w-full overflow-hidden bg-[#FAFAFA] rounded-2xl px-2 py-3 border border-gray-500/10 hover:shadow-lg hover:shadow-black/5 transition-all duration-300 group cursor-pointer"
+    >
       <div className="py-1">
         <div
           className={cn(
@@ -31,7 +48,10 @@ const Card = ({
           )}
         >
           <div className="relative w-full h-full group">
-            <div className="absolute top-0 left-0 w-full h-full rounded-xl">
+            <div
+              className="absolute top-0 left-0 w-full h-full rounded-xl"
+              data-video-player
+            >
               <VideoPlayer
                 url={videoUrl}
                 videoId={videoId}
@@ -49,11 +69,9 @@ const Card = ({
         </div>
       </div>
       <div className="flex items-center justify-between p-1">
-        <Link href={`/detail/${index}`} className="w-full group">
-          <p className="text-[16px] text-black/70 truncate group-hover:text-black/90 transition-all duration-200 font-normal">
-            {title}
-          </p>
-        </Link>
+        <p className="text-[16px] text-black/70 truncate group-hover:text-black/90 transition-all duration-200 font-normal">
+          {title}
+        </p>
       </div>
     </div>
   );

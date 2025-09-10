@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  section     Section
+  videoUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  codebases   Codebase[]
+  
+  @@map("projects")
+}
+
+model Codebase {
+  id        String   @id @default(cuid())
+  name      String
+  url       String?
+  code      String?
+  projectId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@map("codebases")
+}
+
+enum Section {
+  SCREENS
+  ANIMATION
+  MINI_APPS
+}
