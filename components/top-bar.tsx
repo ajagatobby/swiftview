@@ -9,7 +9,7 @@ import { XIcon } from "./icons";
 
 const navigationItems = [
   {
-    href: "/screens",
+    href: "/",
     label: "Screens",
     badge: "8",
   },
