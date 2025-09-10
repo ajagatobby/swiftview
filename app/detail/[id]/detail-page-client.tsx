@@ -53,7 +53,7 @@ const DetailPageClient = ({ videoData }: DetailPageClientProps) => {
         {/* Header */}
         <button
           onClick={handleBack}
-          className="px-3 py-1.5 sm:px-4 sm:py-1 text-sm bg-white hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 flex items-center border border-gray-200 cursor-pointer"
+          className="px-4 py-2 sm:px-4 sm:py-1 text-sm bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 rounded-lg transition-colors duration-200 flex items-center border border-gray-200 cursor-pointer touch-manipulation select-none min-h-[44px] sm:min-h-0"
         >
           <svg
             className="w-4 h-4 mr-2"
@@ -149,7 +149,7 @@ const DetailPageClient = ({ videoData }: DetailPageClientProps) => {
               label: "Preview",
               content: (
                 <div className="my-4 sm:my-8">
-                  <div className="bg-white h-[400px] sm:h-[500px] lg:h-[600px] max-w-sm sm:max-w-md lg:max-w-screen-md mx-auto rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+                  <div className="bg-white h-[500px] sm:h-[600px] lg:h-[700px] max-w-md sm:max-w-lg lg:max-w-4xl mx-auto rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
                     <div className="w-full h-full">
                       <VideoPlayer
                         url={videoData.videoUrl}
