@@ -1,7 +1,6 @@
 interface VideoPlayerProps {
   url: string;
-  playing: boolean;
-  setPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+  videoId: string;
   autoPlay: boolean;
 }
 
@@ -23,9 +22,15 @@ interface ScreenShot {
   link: string;
   appName: string;
   videoUrl: string;
+  isPro?: boolean;
 }
 
 interface SectionProps {
   sectionTitle: string;
   screenShots: ScreenShot[];
+  rowLg?: number;
+  rowMd?: number;
+  rowSm?: number;
+  className?: string;
+  largeCard?: boolean;
 }

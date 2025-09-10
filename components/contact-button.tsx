@@ -21,7 +21,7 @@ export default function ContactButton() {
           strokeWidth={2}
         />
       </svg>
-      Work with me
+      Work with us
     </Button>
   );
 }

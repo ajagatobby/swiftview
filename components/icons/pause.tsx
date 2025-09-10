@@ -5,12 +5,7 @@ const Pause = ({ size = 24, ...props }: PauseProps) => {
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="lucide lucide-pause-icon lucide-pause"
+      fill="currentColor"
       {...props}
     >
       <rect x="14" y="4" width="4" height="16" rx="1" />
