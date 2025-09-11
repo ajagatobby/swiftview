@@ -69,7 +69,7 @@ const Card = ({
         </div>
       </div>
       <div className="flex items-center justify-between p-1">
-        <p className="text-[16px] text-black/70 truncate group-hover:text-black/90 transition-all duration-200 font-normal">
+        <p className="text-[16px] text-black/70 truncate group-hover:text-black/90 transition-all duration-200 font-normal hover:underline">
           {title}
         </p>
       </div>

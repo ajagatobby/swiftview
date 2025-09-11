@@ -78,7 +78,7 @@ const Section = React.memo<SectionProps>(
 
     return (
       <section
-        className="w-full"
+        className="w-full py-6"
         aria-labelledby={`section-${sectionTitle
           .toLowerCase()
           .replace(/\s+/g, "-")}`}
@@ -86,7 +86,7 @@ const Section = React.memo<SectionProps>(
         <header className="w-full flex items-center justify-between mt-4 lg:px-0 px-4">
           <h2
             id={`section-${sectionTitle.toLowerCase().replace(/\s+/g, "-")}`}
-            className="text-lg text-gray-800 font-bold tracking-tight"
+            className="sm:text-xl text-xl text-gray-800 font-bold tracking-tight"
           >
             {sectionTitle}
           </h2>
