@@ -31,9 +31,10 @@ export default async function Home() {
               key={section.key}
               sectionTitle={section.title}
               screenShots={section.screenShots}
-              rowLg={4}
+              rowLg={3}
               rowMd={3}
               rowSm={2}
+              largeCard={true}
             />
           ))
         ) : (
