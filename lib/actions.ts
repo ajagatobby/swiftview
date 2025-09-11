@@ -171,3 +171,26 @@ export async function getProjectById(
     throw new Error(`Failed to fetch project with id ${id}`);
   }
 }
+
+export interface RequestedAppData {
+  appName: string;
+  description: string;
+  email: string;
+}
+
+export async function createRequestedApp(data: RequestedAppData) {
+  try {
+    const requestedApp = await prisma.requestedApp.create({
+      data: {
+        appName: data.appName,
+        description: data.description,
+        email: data.email,
+      },
+    });
+
+    return requestedApp;
+  } catch (error) {
+    console.error("Error creating requested app:", error);
+    throw new Error("Failed to create requested app");
+  }
+}
