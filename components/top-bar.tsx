@@ -138,7 +138,7 @@ export default function TopBar() {
           {/* Social & Contact */}
           <div className="flex items-center gap-3 lg:gap-6">
             <Link
-              href="https://x.com/swiftview"
+              href="https://x.com/getswiftviews"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-colors duration-200"
