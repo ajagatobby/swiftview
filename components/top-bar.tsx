@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import ContactButton from "./contact-button";
 import { XIcon } from "./icons";
 import posthog from "posthog-js";
@@ -163,30 +164,41 @@ export default function TopBar() {
 
             {/* Login/Signup Buttons - Desktop */}
             <div className="hidden lg:flex items-center gap-2">
-              <Link
-                href="/login"
-                className="px-3 py-1.5 text-sm font-medium text-stone-900/80 hover:text-stone-900 transition-colors duration-200"
-                onClick={() => {
-                  posthog.capture("login_clicked", {
-                    location: "top_bar",
-                    button_text: "Login",
-                  });
-                }}
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => {
-                  posthog.capture("signup_clicked", {
-                    location: "top_bar",
-                    button_text: "Sign Up",
-                  });
-                }}
-                className="px-4 py-1.5 text-xs font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-md transition-colors duration-200"
-              >
-                Sign Up
-              </Link>
+              <SignedOut>
+                <Link
+                  href="/sign-in"
+                  className="px-3 py-1.5 text-sm font-medium text-stone-900/80 hover:text-stone-900 transition-colors duration-200"
+                  onClick={() => {
+                    posthog.capture("login_clicked", {
+                      location: "top_bar",
+                      button_text: "Login",
+                    });
+                  }}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/sign-up"
+                  onClick={() => {
+                    posthog.capture("signup_clicked", {
+                      location: "top_bar",
+                      button_text: "Sign Up",
+                    });
+                  }}
+                  className="px-4 py-1.5 text-xs font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-md transition-colors duration-200"
+                >
+                  Sign Up
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                    },
+                  }}
+                />
+              </SignedIn>
             </div>
           </div>
         </div>
@@ -283,22 +295,47 @@ export default function TopBar() {
                     ease: "easeOut",
                   }}
                 >
-                  <div className="flex gap-2">
-                    <Link
-                      href="/login"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex-1 px-4 py-2 text-sm font-medium text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-md text-center transition-colors duration-200"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      href="/signup"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex-1 px-4 py-2 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-md text-center transition-colors duration-200"
-                    >
-                      Sign Up
-                    </Link>
-                  </div>
+                  <SignedOut>
+                    <div className="flex gap-2">
+                      <Link
+                        href="/sign-in"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          posthog.capture("login_clicked", {
+                            location: "mobile_menu",
+                            button_text: "Login",
+                          });
+                        }}
+                        className="flex-1 px-4 py-2 text-sm font-medium text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-md text-center transition-colors duration-200"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/sign-up"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          posthog.capture("signup_clicked", {
+                            location: "mobile_menu",
+                            button_text: "Sign Up",
+                          });
+                        }}
+                        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-md text-center transition-colors duration-200"
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  </SignedOut>
+                  <SignedIn>
+                    <div className="flex items-center justify-center py-2">
+                      <UserButton
+                        appearance={{
+                          elements: {
+                            avatarBox: "w-10 h-10",
+                          },
+                        }}
+                      />
+                    </div>
+                  </SignedIn>
                   <div className="sm:hidden">
                     <ContactButton />
                   </div>

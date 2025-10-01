@@ -1,4 +1,5 @@
 import Section from "~/components/section";
+import { ErrorState } from "~/components/error-state";
 import { getGroupedScreenProjects } from "~/lib/actions";
 import { convertProjectsToScreenShots, formatSectionName } from "~/lib/utils";
 
@@ -63,14 +64,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="w-full flex flex-col items-center justify-center py-12">
-          <p className="text-lg text-red-500 text-center">
-            Failed to load screens.
-          </p>
-          <p className="text-sm text-gray-400 text-center mt-2">
-            Please try refreshing the page.
-          </p>
-        </div>
+        <ErrorState />
       </div>
     );
   }

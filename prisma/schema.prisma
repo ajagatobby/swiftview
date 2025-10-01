@@ -10,6 +10,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserPlan {
+  id String @id @default(cuid())
+  userId String
+  plan Plan
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
 model Project {
   id          String   @id @default(cuid())
   title       String
@@ -18,7 +36,8 @@ model Project {
   videoUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+  isProOnly Boolean @default(false)
+
   codebases   Codebase[]
   
   @@map("projects")
@@ -32,7 +51,6 @@ model Codebase {
   projectId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
   @@map("codebases")
@@ -53,7 +71,6 @@ model RequestedApp {
 enum Section {
   SCREENS
   ANIMATION
-  MINI_APPS
 }
 
 enum RequestStatus {
