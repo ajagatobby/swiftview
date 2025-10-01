@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import ContactButton from "./contact-button";
 import { XIcon } from "./icons";
+import posthog from "posthog-js";
 
 const navigationItems = [
   {
@@ -16,15 +18,13 @@ const navigationItems = [
   {
     href: "/request-app",
     label: "Request App",
+  },
+  {
+    href: "/mini-apps",
+    label: "Mini Apps",
     badge: "New",
     badgeVariant: "blue",
   },
-  // {
-  //   href: "/mini-apps",
-  //   label: "Mini Apps",
-  //   badge: "New",
-  //   badgeVariant: "blue",
-  // },
   {
     href: "/animations",
     label: "Animations",
@@ -37,24 +37,35 @@ export default function TopBar() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleScroll = useCallback(() => {
+    const currentScrollY = window.scrollY;
+
+    // Show navbar when scrolling up or at the top
+    if (currentScrollY < lastScrollY || currentScrollY < 100) {
+      setIsVisible(true);
+    } else {
+      // Hide navbar when scrolling down
+      setIsVisible(false);
+    }
+
+    setLastScrollY(currentScrollY);
+  }, [lastScrollY]);
+
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+    // Debounce scroll events to prevent excessive re-renders
+    let timeoutId: NodeJS.Timeout;
 
-      // Show navbar when scrolling up or at the top
-      if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        setIsVisible(true);
-      } else {
-        // Hide navbar when scrolling down
-        setIsVisible(false);
-      }
-
-      setLastScrollY(currentScrollY);
+    const debouncedHandleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 10);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+    window.addEventListener("scroll", debouncedHandleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", debouncedHandleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [handleScroll]);
 
   return (
     <>
@@ -136,13 +147,18 @@ export default function TopBar() {
           </div>
 
           {/* Social & Contact */}
-          <div className="flex items-center gap-3 lg:gap-6">
+          <div className="flex items-center gap-2 lg:gap-4">
             <Link
               href="https://x.com/getswiftviews"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-colors duration-200"
               aria-label="Follow us on X (Twitter)"
+              onClick={() => {
+                posthog.capture("x_clicked", {
+                  location: "top_bar",
+                });
+              }}
             >
               <XIcon
                 color={isVisible && lastScrollY < 100 ? "#000000" : "#FFFFFF"}
@@ -153,8 +169,47 @@ export default function TopBar() {
                 className="hover:opacity-80 transition-opacity duration-200 w-5 h-5 block lg:hidden"
               />
             </Link>
-            <div className="hidden sm:block">
+            {/* <div className="hidden sm:block">
               <ContactButton />
+            </div> */}
+
+            {/* Login/Signup Buttons - Desktop */}
+            <div className="hidden lg:flex items-center gap-2">
+              <SignedOut>
+                <Link
+                  href="/sign-in"
+                  className="px-3 py-1.5 text-sm font-medium text-stone-900/80 hover:text-stone-900 transition-colors duration-200"
+                  onClick={() => {
+                    posthog.capture("login_clicked", {
+                      location: "top_bar",
+                      button_text: "Login",
+                    });
+                  }}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/sign-up"
+                  onClick={() => {
+                    posthog.capture("signup_clicked", {
+                      location: "top_bar",
+                      button_text: "Sign Up",
+                    });
+                  }}
+                  className="px-4 py-1.5 text-xs font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-md transition-colors duration-200"
+                >
+                  Sign Up
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                    },
+                  }}
+                />
+              </SignedIn>
             </div>
           </div>
         </div>
@@ -239,8 +294,10 @@ export default function TopBar() {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Login/Signup Buttons - Mobile */}
                 <motion.div
-                  className="pt-4 border-t border-stone-200 sm:hidden"
+                  className="pt-4 border-t border-stone-200 flex flex-col gap-3"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -249,7 +306,50 @@ export default function TopBar() {
                     ease: "easeOut",
                   }}
                 >
-                  <ContactButton />
+                  <SignedOut>
+                    <div className="flex gap-2">
+                      <Link
+                        href="/sign-in"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          posthog.capture("login_clicked", {
+                            location: "mobile_menu",
+                            button_text: "Login",
+                          });
+                        }}
+                        className="flex-1 px-4 py-2 text-sm font-medium text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-md text-center transition-colors duration-200"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        href="/sign-up"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          posthog.capture("signup_clicked", {
+                            location: "mobile_menu",
+                            button_text: "Sign Up",
+                          });
+                        }}
+                        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-md text-center transition-colors duration-200"
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  </SignedOut>
+                  <SignedIn>
+                    <div className="flex items-center justify-center py-2">
+                      <UserButton
+                        appearance={{
+                          elements: {
+                            avatarBox: "w-10 h-10",
+                          },
+                        }}
+                      />
+                    </div>
+                  </SignedIn>
+                  <div className="sm:hidden">
+                    <ContactButton />
+                  </div>
                 </motion.div>
               </nav>
             </motion.div>

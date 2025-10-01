@@ -8,7 +8,7 @@ export interface ProjectWithCodebases {
   id: string;
   title: string;
   description: string | null;
-  section: "SCREENS" | "ANIMATION" | "MINI_APPS";
+  section: "SCREENS" | "ANIMATION";
   videoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -50,7 +50,7 @@ export async function getProjects(): Promise<ProjectWithCodebases[]> {
 }
 
 export async function getProjectsBySection(
-  section: "SCREENS" | "ANIMATION" | "MINI_APPS"
+  section: "SCREENS" | "ANIMATION"
 ): Promise<ProjectWithCodebases[]> {
   try {
     const projects = await prisma.project.findMany({
@@ -86,7 +86,6 @@ export async function getGroupedScreenProjects(): Promise<GroupedProjects> {
     const grouped: GroupedProjects = {};
 
     projects.forEach((project) => {
-      // Extract the first word from the title
       const firstWord = project.title.split(" ")[0]?.toLowerCase();
 
       if (firstWord) {
@@ -112,33 +111,30 @@ export async function getGroupedScreenProjects(): Promise<GroupedProjects> {
   }
 }
 
-export async function getGroupedAnimationProjects(): Promise<GroupedProjects> {
+export async function getGroupedAnimationProjects(): Promise<
+  ProjectWithCodebases[]
+> {
   try {
-    const projects = await getProjectsBySection("ANIMATION");
-
-    const grouped: GroupedProjects = {};
-
-    projects.forEach((project) => {
-      // Extract the first word from the title
-      const firstWord = project.title.split(" ")[0]?.toLowerCase();
-
-      if (firstWord) {
-        if (!grouped[firstWord]) {
-          grouped[firstWord] = [];
-        }
-        grouped[firstWord].push(project);
-      }
+    const projects = await prisma.project.findMany({
+      where: {
+        section: "ANIMATION",
+      },
+      include: {
+        codebases: {
+          select: {
+            id: true,
+            name: true,
+            url: true,
+            code: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
-    // Sort each group by creation date
-    Object.keys(grouped).forEach((key) => {
-      grouped[key].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-    });
-
-    return grouped;
+    return projects;
   } catch (error) {
     console.error("Error grouping animation projects:", error);
     throw new Error("Failed to group animation projects");

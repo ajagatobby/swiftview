@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Prism from "prismjs";
 import "prismjs/components/prism-swift";
 
@@ -7,7 +7,7 @@ interface CodeBlocksProps {
   content: string;
 }
 
-const CodeBlocks = ({ content }: CodeBlocksProps) => {
+const CodeBlocks = React.memo<CodeBlocksProps>(({ content }) => {
   const codeBlocks = useMemo(
     () => content.match(/```[\s\S]*?```/g) || [],
     [content]
@@ -21,7 +21,7 @@ const CodeBlocks = ({ content }: CodeBlocksProps) => {
     Prism.highlightAll();
   }, [codeBlocks]);
 
-  const copyToClipboard = async (text: string, index: number) => {
+  const copyToClipboard = useCallback(async (text: string, index: number) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedStates((prev) => ({ ...prev, [index]: true }));
@@ -31,7 +31,7 @@ const CodeBlocks = ({ content }: CodeBlocksProps) => {
     } catch (err) {
       console.error("Failed to copy code:", err);
     }
-  };
+  }, []);
 
   if (codeBlocks.length === 0) {
     return (
@@ -230,6 +230,8 @@ const CodeBlocks = ({ content }: CodeBlocksProps) => {
       })}
     </div>
   );
-};
+});
+
+CodeBlocks.displayName = "CodeBlocks";
 
 export default CodeBlocks;
