@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SubscriptionModalProps {
@@ -105,14 +105,22 @@ const FeatureItem = ({
   );
 };
 
-const PricingCard = ({ plan }: { plan: PricingPlan }) => {
+const PricingCard = ({
+  plan,
+  onUpgrade,
+  isLoading,
+}: {
+  plan: PricingPlan;
+  onUpgrade?: () => void;
+  isLoading?: boolean;
+}) => {
   const isPro = plan.isRecommended;
   const cardClass = isPro
     ? "relative bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 rounded-lg p-8 border border-amber-200"
     : "relative bg-gray-50 rounded-lg p-8 border border-gray-200 hover:border-gray-300 transition-colors";
 
   const buttonClass = isPro
-    ? "w-full py-3 px-4 bg-gradient-to-b from-stone-900 to-stone-700 border border-stone-900 hover:opacity-95 text-white text-sm font-semibold rounded-lg tracking-tight transition-opacity cursor-pointer"
+    ? "w-full py-3 px-4 bg-gradient-to-b from-stone-900 to-stone-700 border border-stone-900 hover:opacity-95 disabled:opacity-50 text-white text-sm font-semibold rounded-lg tracking-tight transition-opacity cursor-pointer"
     : "w-full py-3 px-4 bg-white border border-gray-300 text-gray-500 text-sm font-medium rounded-lg tracking-tight cursor-not-allowed";
 
   return (
@@ -144,96 +152,139 @@ const PricingCard = ({ plan }: { plan: PricingPlan }) => {
         ))}
       </div>
 
-      <button disabled={plan.buttonDisabled} className={buttonClass}>
-        {plan.buttonText}
+      <button
+        disabled={plan.buttonDisabled || isLoading}
+        onClick={isPro && !plan.buttonDisabled ? onUpgrade : undefined}
+        className={buttonClass}
+      >
+        {isLoading ? "Processing..." : plan.buttonText}
       </button>
     </div>
   );
 };
 
-const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+const SubscriptionModal = React.memo<SubscriptionModalProps>(
+  ({ isOpen, onClose }) => {
+    const [isLoading, setIsLoading] = useState(false);
 
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
+    useEffect(() => {
+      if (isOpen) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "unset";
+      }
 
-  return (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <>
-          {/* Backdrop with blur */}
-          <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-            onClick={onClose}
-          >
-            {/* Modal Container */}
+      return () => {
+        document.body.style.overflow = "unset";
+      };
+    }, [isOpen]);
+
+    const handleUpgrade = useCallback(async () => {
+      try {
+        setIsLoading(true);
+
+        const response = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          console.error("Checkout error:", data.error);
+          return;
+        }
+
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } catch (error) {
+        console.error("Upgrade error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }, []);
+
+    return (
+      <AnimatePresence mode="wait">
+        {isOpen && (
+          <>
+            {/* Backdrop with blur */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+              exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+              onClick={onClose}
             >
-              {/* Glowing gradient at the top */}
-              <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-blue-400/20 via-blue-500/10 to-transparent blur-3xl -z-10" />
-              <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-cyan-400/5 via-blue-600/10 to-transparent blur-3xl -z-10" />
+              {/* Modal Container */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Glowing gradient at the top */}
+                <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-blue-400/20 via-blue-500/10 to-transparent blur-3xl -z-10" />
+                <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-cyan-400/5 via-blue-600/10 to-transparent blur-3xl -z-10" />
 
-              {/* Header */}
-              <div className="sticky top-0 bg-white/70 backdrop-blur-md border-b border-gray-100 px-8 py-6 flex items-center justify-between z-10">
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    Upgrade to Pro
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Unlock all features and content
-                  </p>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                {/* Header */}
+                <div className="sticky top-0 bg-white/70 backdrop-blur-md border-b border-gray-100 px-8 py-6 flex items-center justify-between z-10">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      Upgrade to Pro
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Unlock all features and content
+                    </p>
+                  </div>
+                  <button
+                    onClick={onClose}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Pricing Cards */}
-              <div className="p-8">
-                <div className="grid md:grid-cols-2 gap-6">
-                  {PRICING_PLANS.map((plan, index) => (
-                    <PricingCard key={index} plan={plan} />
-                  ))}
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
                 </div>
-              </div>
+
+                {/* Pricing Cards */}
+                <div className="p-8">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {PRICING_PLANS.map((plan, index) => (
+                      <PricingCard
+                        key={index}
+                        plan={plan}
+                        onUpgrade={handleUpgrade}
+                        isLoading={isLoading}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
+          </>
+        )}
+      </AnimatePresence>
+    );
+  }
+);
+
+SubscriptionModal.displayName = "SubscriptionModal";
 
 export default SubscriptionModal;

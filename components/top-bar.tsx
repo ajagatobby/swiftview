@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,24 +37,35 @@ export default function TopBar() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const handleScroll = useCallback(() => {
+    const currentScrollY = window.scrollY;
+
+    // Show navbar when scrolling up or at the top
+    if (currentScrollY < lastScrollY || currentScrollY < 100) {
+      setIsVisible(true);
+    } else {
+      // Hide navbar when scrolling down
+      setIsVisible(false);
+    }
+
+    setLastScrollY(currentScrollY);
+  }, [lastScrollY]);
+
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+    // Debounce scroll events to prevent excessive re-renders
+    let timeoutId: NodeJS.Timeout;
 
-      // Show navbar when scrolling up or at the top
-      if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        setIsVisible(true);
-      } else {
-        // Hide navbar when scrolling down
-        setIsVisible(false);
-      }
-
-      setLastScrollY(currentScrollY);
+    const debouncedHandleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 10);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+    window.addEventListener("scroll", debouncedHandleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", debouncedHandleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [handleScroll]);
 
   return (
     <>

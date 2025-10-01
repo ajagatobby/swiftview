@@ -12,20 +12,50 @@ datasource db {
 
 model User {
   id String @id @default(cuid())
+  clerkId String @unique
   email String @unique
+  firstName String?
+  lastName String?
+  imageUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  subscription Subscription?
+  
+  @@map("users")
 }
 
-model UserPlan {
+model Subscription {
   id String @id @default(cuid())
-  userId String
-  plan Plan
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan Plan @default(FREE)
+  status SubscriptionStatus @default(INACTIVE)
+  
+  // Stripe fields
+  stripeCustomerId String? @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId String?
+  stripeCurrentPeriodEnd DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("subscriptions")
 }
 
 enum Plan {
   FREE
   PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
 }
 
 model Project {

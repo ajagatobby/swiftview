@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Tab {
@@ -13,8 +13,16 @@ interface AnimatedTabsProps {
   defaultTab?: string;
 }
 
-const AnimatedTabs = ({ tabs, defaultTab }: AnimatedTabsProps) => {
+const AnimatedTabs = React.memo<AnimatedTabsProps>(({ tabs, defaultTab }) => {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+
+  const handleTabClick = useCallback((tabId: string) => {
+    setActiveTab(tabId);
+  }, []);
+
+  const activeTabContent = useMemo(() => {
+    return tabs.find((tab) => tab.id === activeTab)?.content;
+  }, [tabs, activeTab]);
 
   return (
     <div className="w-full">
@@ -23,7 +31,7 @@ const AnimatedTabs = ({ tabs, defaultTab }: AnimatedTabsProps) => {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabClick(tab.id)}
             className={`relative text-md font-medium tracking-tight transition-colors duration-200 cursor-pointer ${
               activeTab === tab.id
                 ? "text-gray-900"
@@ -53,11 +61,13 @@ const AnimatedTabs = ({ tabs, defaultTab }: AnimatedTabsProps) => {
           transition={{ duration: 0.2 }}
           className="w-full"
         >
-          {tabs.find((tab) => tab.id === activeTab)?.content}
+          {activeTabContent}
         </motion.div>
       </AnimatePresence>
     </div>
   );
-};
+});
+
+AnimatedTabs.displayName = "AnimatedTabs";
 
 export default AnimatedTabs;
