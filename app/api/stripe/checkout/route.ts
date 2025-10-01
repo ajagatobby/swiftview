@@ -43,7 +43,7 @@ export async function POST() {
 
     // If user already has an active subscription, redirect to billing portal
     if (dbUser.subscription?.stripeCustomerId) {
-      const session = await stripe.billingPortal.sessions.create({
+      const session = await stripe.get().billingPortal.sessions.create({
         customer: dbUser.subscription.stripeCustomerId,
         return_url: `${returnUrl}/`,
       });
@@ -52,7 +52,7 @@ export async function POST() {
     }
 
     // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripe.get().checkout.sessions.create({
       customer_email: dbUser.email,
       mode: "subscription",
       payment_method_types: ["card"],

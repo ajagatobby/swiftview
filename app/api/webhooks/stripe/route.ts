@@ -19,11 +19,13 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe
+      .get()
+      .webhooks.constructEvent(
+        body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET!
+      );
     console.log("Webhook event verified:", event.type);
   } catch (error) {
     console.error("Webhook signature verification failed:", error);
@@ -38,9 +40,11 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed":
         // Payment successful, create or update subscription
         if (session.subscription && session.metadata?.userId) {
-          const stripeSubscription = (await stripe.subscriptions.retrieve(
-            session.subscription as string
-          )) as Stripe.Subscription;
+          const stripeSubscription = (await stripe
+            .get()
+            .subscriptions.retrieve(
+              session.subscription as string
+            )) as Stripe.Subscription;
 
           await db.subscription.upsert({
             where: { userId: session.metadata.userId },
