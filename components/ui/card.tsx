@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import VideoPlayer from "../video-player";
 import { generateVideoId } from "../../store/video-store";
 import { cn } from "~/Utilities";
+import ArrowRightIcon from "../icons/arrow-right";
 
 interface CardProps {
   index: number;
@@ -68,10 +69,18 @@ const Card = ({
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between p-1">
-        <p className="text-[16px] text-black/70 truncate group-hover:text-black/90 transition-all duration-200 font-normal hover:underline">
+      <div className="flex items-center justify-between p-1 gap-2">
+        <p className="text-[16px] text-black/70 truncate group-hover:text-black/90 transition-all duration-200 font-normal flex-1">
           {title}
         </p>
+        <button
+          onClick={() => router.push(link)}
+          className="flex items-center gap-1 px-3 py-1.5 bg-black/5 hover:bg-black/10 text-black/60 hover:text-black/80 rounded-lg transition-all duration-200 text-sm font-medium group-hover:bg-black/10 cursor-pointer"
+          aria-label={`View ${title} details`}
+        >
+          View
+          <ArrowRightIcon className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

@@ -1,19 +1,19 @@
 import Section from "~/components/section";
 import { Sparkle } from "~/components/icons";
 import { getGroupedAnimationProjects } from "~/lib/actions";
-import { convertProjectsToScreenShots, formatSectionName } from "~/lib/utils";
 
 export default async function AnimationsPage() {
   try {
-    const groupedProjects = await getGroupedAnimationProjects();
+    const projects = await getGroupedAnimationProjects();
 
-    const sections = Object.entries(groupedProjects).map(
-      ([sectionKey, projects]) => ({
-        title: formatSectionName(sectionKey).replace("screens", "animations"),
-        screenShots: convertProjectsToScreenShots(projects),
-        key: sectionKey,
-      })
-    );
+    const screenShots = projects.map((project) => ({
+      title: project.title,
+      image: project.videoUrl || "",
+      link: `/detail/${project.id}`,
+      appName: project.title,
+      videoUrl: project.videoUrl || "",
+      isPro: false,
+    }));
 
     return (
       <div className="w-full min-h-screen flex flex-col items-center justify-start pb-20 pt-4">
@@ -26,19 +26,16 @@ export default async function AnimationsPage() {
           </p>
         </div>
 
-        {sections.length > 0 ? (
-          sections.map((section) => (
-            <Section
-              key={section.key}
-              sectionTitle={section.title}
-              screenShots={section.screenShots}
-              rowLg={3}
-              rowMd={2}
-              rowSm={1}
-              className="z-50"
-              largeCard={true}
-            />
-          ))
+        {screenShots.length > 0 ? (
+          <Section
+            sectionTitle="Animations"
+            screenShots={screenShots}
+            rowLg={3}
+            rowMd={2}
+            rowSm={1}
+            className="z-50"
+            largeCard={true}
+          />
         ) : (
           <div className="w-full flex flex-col items-center justify-center py-12">
             <div className="flex flex-col items-center space-y-4">

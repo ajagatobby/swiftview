@@ -1,13 +1,13 @@
 import React from "react";
 import Section from "~/components/section";
-import { welcomeScreenShots } from "~/Utilities/Mock";
+import { miniAppsData } from "~/Utilities/Mock";
 
 export default function Page() {
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-start pb-20 pt-4">
       <Section
         sectionTitle="Mini Apps"
-        screenShots={welcomeScreenShots}
+        screenShots={miniAppsData}
         rowLg={3}
         rowMd={3}
         rowSm={2}
