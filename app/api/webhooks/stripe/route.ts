@@ -46,19 +46,27 @@ export async function POST(req: NextRequest) {
               session.subscription as string
             )) as Stripe.Subscription;
 
+          // Debug: Log the subscription object to see its structure
+          console.log(
+            "Stripe subscription object:",
+            JSON.stringify(stripeSubscription, null, 2)
+          );
+
+          // Get current period end with fallback
+          const currentPeriodEnd =
+            (stripeSubscription as unknown as { current_period_end?: number })
+              .current_period_end ||
+            Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
+
+          console.log("Current period end timestamp:", currentPeriodEnd);
+
           await db.subscription.upsert({
             where: { userId: session.metadata.userId },
             update: {
               stripeCustomerId: session.customer as string,
               stripeSubscriptionId: stripeSubscription.id,
               stripePriceId: stripeSubscription.items.data[0].price.id,
-              stripeCurrentPeriodEnd: new Date(
-                (
-                  stripeSubscription as Stripe.Subscription & {
-                    current_period_end: number;
-                  }
-                ).current_period_end * 1000
-              ),
+              stripeCurrentPeriodEnd: new Date(currentPeriodEnd * 1000),
               plan: "PRO",
               status: "ACTIVE",
             },
@@ -67,13 +75,7 @@ export async function POST(req: NextRequest) {
               stripeCustomerId: session.customer as string,
               stripeSubscriptionId: stripeSubscription.id,
               stripePriceId: stripeSubscription.items.data[0].price.id,
-              stripeCurrentPeriodEnd: new Date(
-                (
-                  stripeSubscription as Stripe.Subscription & {
-                    current_period_end: number;
-                  }
-                ).current_period_end * 1000
-              ),
+              stripeCurrentPeriodEnd: new Date(currentPeriodEnd * 1000),
               plan: "PRO",
               status: "ACTIVE",
             },
@@ -99,11 +101,9 @@ export async function POST(req: NextRequest) {
               where: { id: dbSubscription.id },
               data: {
                 stripeCurrentPeriodEnd: new Date(
-                  (
-                    subscription as Stripe.Subscription & {
-                      current_period_end: number;
-                    }
-                  ).current_period_end * 1000
+                  ((subscription as unknown as { current_period_end?: number })
+                    .current_period_end ||
+                    Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60) * 1000
                 ),
                 status: "ACTIVE",
               },
@@ -135,11 +135,9 @@ export async function POST(req: NextRequest) {
             data: {
               status,
               stripeCurrentPeriodEnd: new Date(
-                (
-                  subscription as Stripe.Subscription & {
-                    current_period_end: number;
-                  }
-                ).current_period_end * 1000
+                ((subscription as unknown as { current_period_end?: number })
+                  .current_period_end ||
+                  Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60) * 1000
               ),
             },
           });

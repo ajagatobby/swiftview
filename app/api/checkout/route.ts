@@ -3,6 +3,10 @@ import { currentUser } from "@clerk/nextjs/server";
 import { stripe, STRIPE_PRO_PRICE_ID } from "~/lib/stripe";
 import { db } from "~/lib/db";
 
+export async function GET() {
+  return NextResponse.json({ message: "Hello, world!" });
+}
+
 export async function POST() {
   try {
     const user = await currentUser();

@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -166,6 +168,8 @@ const PricingCard = ({
 const SubscriptionModal = React.memo<SubscriptionModalProps>(
   ({ isOpen, onClose }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const { isSignedIn, isLoaded } = useUser();
+    const router = useRouter();
 
     useEffect(() => {
       if (isOpen) {
@@ -180,10 +184,23 @@ const SubscriptionModal = React.memo<SubscriptionModalProps>(
     }, [isOpen]);
 
     const handleUpgrade = useCallback(async () => {
+      // Wait for Clerk to load
+      if (!isLoaded) return;
+
+      // If user is not signed in, redirect to sign-in with return URL
+      if (!isSignedIn) {
+        const currentPath = window.location.pathname + window.location.search;
+        const signInUrl = `/sign-in?redirect_url=${encodeURIComponent(
+          currentPath
+        )}`;
+        router.push(signInUrl);
+        return;
+      }
+
       try {
         setIsLoading(true);
 
-        const response = await fetch("/api/stripe/checkout", {
+        const response = await fetch("/api/checkout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -205,7 +222,7 @@ const SubscriptionModal = React.memo<SubscriptionModalProps>(
       } finally {
         setIsLoading(false);
       }
-    }, []);
+    }, [isSignedIn, isLoaded, router]);
 
     return (
       <AnimatePresence mode="wait">

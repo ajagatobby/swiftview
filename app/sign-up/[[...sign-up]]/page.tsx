@@ -3,9 +3,12 @@
 import { SignUp } from "@clerk/nextjs";
 import { Suspense, useState, useEffect } from "react";
 import { LoadingSpinner } from "~/components/ui/spinner";
+import { useSearchParams } from "next/navigation";
 
 function SignUpComponent() {
   const [isLoading, setIsLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect_url");
 
   useEffect(() => {
     // Small delay to ensure smooth transition
@@ -22,6 +25,7 @@ function SignUpComponent() {
 
   return (
     <SignUp
+      redirectUrl={redirectUrl || "/"}
       appearance={{
         elements: {
           rootBox: "mx-auto",
