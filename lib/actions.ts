@@ -8,7 +8,7 @@ export interface ProjectWithCodebases {
   id: string;
   title: string;
   description: string | null;
-  section: "SCREENS" | "ANIMATION" | "MINI_APPS";
+  section: "SCREENS" | "ANIMATION";
   videoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -50,7 +50,7 @@ export async function getProjects(): Promise<ProjectWithCodebases[]> {
 }
 
 export async function getProjectsBySection(
-  section: "SCREENS" | "ANIMATION" | "MINI_APPS"
+  section: "SCREENS" | "ANIMATION"
 ): Promise<ProjectWithCodebases[]> {
   try {
     const projects = await prisma.project.findMany({
