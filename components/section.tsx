@@ -38,6 +38,7 @@ interface SectionProps {
   rowSm?: 1 | 2 | 3 | 4 | 5 | 6;
   className?: string;
   largeCard?: boolean;
+  userIsPro?: boolean;
 }
 
 const Section = React.memo<SectionProps>(
@@ -49,6 +50,7 @@ const Section = React.memo<SectionProps>(
     rowSm = 2,
     className,
     largeCard = false,
+    userIsPro = false,
   }) => {
     const gridClasses = useMemo(() => {
       const classes = [
@@ -72,9 +74,10 @@ const Section = React.memo<SectionProps>(
           key={`${screenShot.title}-${index}`}
           largeCard={largeCard}
           isPro={screenShot.isPro}
+          userIsPro={userIsPro}
         />
       ));
-    }, [screenShots, largeCard]);
+    }, [screenShots, largeCard, userIsPro]);
 
     return (
       <section

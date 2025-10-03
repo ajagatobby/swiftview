@@ -20,6 +20,7 @@ interface MiniAppData {
   videoUrl: string;
   appName: string;
   isPro: boolean;
+  userIsPro?: boolean;
   githubLink: string;
   screenshots?: Screenshot[];
 }
@@ -38,7 +39,7 @@ const MiniAppDetailClient = ({ miniAppData }: MiniAppDetailClientProps) => {
   ];
 
   const handleGithubClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (miniAppData.isPro) {
+    if (miniAppData.isPro && !miniAppData.userIsPro) {
       e.preventDefault();
       setIsSubscriptionModalOpen(true);
     }

@@ -13,6 +13,7 @@ interface CardProps {
   link: string;
   largeCard?: boolean;
   isPro?: boolean;
+  userIsPro?: boolean;
 }
 
 const Card = React.memo<CardProps>(
@@ -25,7 +26,6 @@ const Card = React.memo<CardProps>(
 
     const handleCardClick = useCallback(
       (e: React.MouseEvent) => {
-        // Only navigate if the click is not on the video player or its controls
         const target = e.target as HTMLElement;
         const isVideoPlayer =
           target.closest("[data-video-player]") ||

@@ -2,6 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import MiniAppDetailClient from "./mini-app-detail-client";
 import { welcomeScreenShots } from "~/Utilities/Mock";
+import { getCurrentUserSubscription } from "~/lib/utils";
 
 interface MiniAppDetailPageProps {
   params: Promise<{
@@ -64,6 +65,9 @@ const MiniAppDetailPage = async ({ params }: MiniAppDetailPageProps) => {
       notFound();
     }
 
+    // Check user subscription status
+    const { isPro } = await getCurrentUserSubscription();
+
     // Get screenshots for this mini-app
     const screenshots = screenshotsMap[appIndex] || [
       { url: miniApp.videoUrl, type: "video" as const },
@@ -75,6 +79,7 @@ const MiniAppDetailPage = async ({ params }: MiniAppDetailPageProps) => {
       videoUrl: miniApp.videoUrl,
       appName: miniApp.appName,
       isPro: miniApp.isPro || false,
+      userIsPro: isPro,
       githubLink: miniApp.link,
       screenshots: screenshots,
     };

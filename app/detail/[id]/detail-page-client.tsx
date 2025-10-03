@@ -15,6 +15,8 @@ interface VideoData {
   videoUrl: string;
   description: string;
   markdownContent: string;
+  isPro?: boolean;
+  userIsPro?: boolean;
 }
 
 interface DetailPageClientProps {
@@ -162,65 +164,115 @@ const DetailPageClient = ({ videoData }: DetailPageClientProps) => {
               label: "Code",
               content: (
                 <div className="my-4 sm:my-8">
-                  <SignedIn>
-                    <CodeBlocks content={videoData.markdownContent} />
-                  </SignedIn>
-                  <SignedOut>
-                    <div className="bg-white rounded-lg border-2 border-gray-200 p-8 sm:p-12 text-center">
+                  {videoData.isPro && !videoData.userIsPro ? (
+                    // Pro-only content for non-Pro users
+                    <div className="bg-white rounded-lg border-2 border-amber-200 p-8 sm:p-12 text-center">
                       <div className="max-w-md mx-auto">
                         <div className="mb-6">
-                          <svg
-                            className="w-16 h-16 mx-auto text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                            />
-                          </svg>
+                          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                            <svg
+                              className="w-8 h-8 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                              />
+                            </svg>
+                          </div>
                         </div>
                         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-                          Sign in to view code
+                          Pro Only Content
                         </h3>
                         <p className="text-sm sm:text-base text-gray-600 mb-6">
-                          Create a free account to access the full source code
-                          for this SwiftUI screen.
+                          This code is available to Pro subscribers only.
+                          Upgrade to access the full source code.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                           <Link
                             href="/sign-up"
                             onClick={() => {
-                              posthog.capture("signup_clicked", {
+                              posthog.capture("pro_upgrade_clicked", {
                                 location: "code_view_prompt",
                                 screen_id: videoData.id,
                                 screen_title: videoData.title,
                               });
                             }}
-                            className="px-6 py-3 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-lg transition-colors duration-200"
+                            className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 rounded-lg transition-colors duration-200"
                           >
-                            Sign Up Free
-                          </Link>
-                          <Link
-                            href="/sign-in"
-                            onClick={() => {
-                              posthog.capture("login_clicked", {
-                                location: "code_view_prompt",
-                                screen_id: videoData.id,
-                                screen_title: videoData.title,
-                              });
-                            }}
-                            className="px-6 py-3 text-sm font-medium text-stone-900 bg-white hover:bg-gray-50 rounded-lg border border-gray-300 transition-colors duration-200"
-                          >
-                            Sign In
+                            Upgrade to Pro
                           </Link>
                         </div>
                       </div>
                     </div>
-                  </SignedOut>
+                  ) : (
+                    // Regular content for Pro users or non-Pro content
+                    <>
+                      <SignedIn>
+                        <CodeBlocks content={videoData.markdownContent} />
+                      </SignedIn>
+                      <SignedOut>
+                        <div className="bg-white rounded-lg border-2 border-gray-200 p-8 sm:p-12 text-center">
+                          <div className="max-w-md mx-auto">
+                            <div className="mb-6">
+                              <svg
+                                className="w-16 h-16 mx-auto text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                />
+                              </svg>
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                              Sign in to view code
+                            </h3>
+                            <p className="text-sm sm:text-base text-gray-600 mb-6">
+                              Create a free account to access the full source
+                              code for this SwiftUI screen.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                              <Link
+                                href="/sign-up"
+                                onClick={() => {
+                                  posthog.capture("signup_clicked", {
+                                    location: "code_view_prompt",
+                                    screen_id: videoData.id,
+                                    screen_title: videoData.title,
+                                  });
+                                }}
+                                className="px-6 py-3 text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 rounded-lg transition-colors duration-200"
+                              >
+                                Sign Up Free
+                              </Link>
+                              <Link
+                                href="/sign-in"
+                                onClick={() => {
+                                  posthog.capture("login_clicked", {
+                                    location: "code_view_prompt",
+                                    screen_id: videoData.id,
+                                    screen_title: videoData.title,
+                                  });
+                                }}
+                                className="px-6 py-3 text-sm font-medium text-stone-900 bg-white hover:bg-gray-50 rounded-lg border border-gray-300 transition-colors duration-200"
+                              >
+                                Sign In
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </SignedOut>
+                    </>
+                  )}
                 </div>
               ),
             },

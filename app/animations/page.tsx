@@ -1,10 +1,15 @@
 import Section from "~/components/section";
 import { Sparkle } from "~/components/icons";
 import { getGroupedAnimationProjects } from "~/lib/actions";
+import {
+  filterContentBySubscription,
+  getCurrentUserSubscription,
+} from "~/lib/utils";
 
 export default async function AnimationsPage() {
   try {
     const projects = await getGroupedAnimationProjects();
+    const { isPro } = await getCurrentUserSubscription();
 
     const screenShots = projects.map((project) => ({
       title: project.title,
@@ -12,8 +17,10 @@ export default async function AnimationsPage() {
       link: `/detail/${project.id}`,
       appName: project.title,
       videoUrl: project.videoUrl || "",
-      isPro: false,
+      isPro: project.isProOnly,
     }));
+
+    const filteredScreenShots = filterContentBySubscription(screenShots, isPro);
 
     return (
       <div className="w-full min-h-screen flex flex-col items-center justify-start pb-20 pt-4">
@@ -26,15 +33,16 @@ export default async function AnimationsPage() {
           </p>
         </div>
 
-        {screenShots.length > 0 ? (
+        {filteredScreenShots.length > 0 ? (
           <Section
             sectionTitle="Animations"
-            screenShots={screenShots}
+            screenShots={filteredScreenShots}
             rowLg={3}
             rowMd={2}
             rowSm={1}
             className="z-50"
             largeCard={true}
+            userIsPro={isPro}
           />
         ) : (
           <div className="w-full flex flex-col items-center justify-center py-12">

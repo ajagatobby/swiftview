@@ -1,18 +1,34 @@
 import Section from "~/components/section";
 import { ErrorState } from "~/components/error-state";
 import { getGroupedScreenProjects } from "~/lib/actions";
-import { convertProjectsToScreenShots, formatSectionName } from "~/lib/utils";
+import {
+  convertProjectsToScreenShots,
+  formatSectionName,
+  filterContentBySubscription,
+  getCurrentUserSubscription,
+} from "~/lib/utils";
 
 export default async function Home() {
   try {
     const groupedProjects = await getGroupedScreenProjects();
+    const { isPro } = await getCurrentUserSubscription();
 
     const sections = Object.entries(groupedProjects).map(
-      ([sectionKey, projects]) => ({
-        title: formatSectionName(sectionKey),
-        screenShots: convertProjectsToScreenShots(projects),
-        key: sectionKey,
-      })
+      ([sectionKey, projects]) => {
+        const screenShots = convertProjectsToScreenShots(projects);
+        // Show all content - UI will handle access restrictions
+        const filteredScreenShots = filterContentBySubscription(
+          screenShots,
+          isPro
+        );
+
+        return {
+          title: formatSectionName(sectionKey),
+          screenShots: filteredScreenShots,
+          key: sectionKey,
+          userIsPro: isPro, // Pass subscription status to UI
+        };
+      }
     );
 
     return (
@@ -36,6 +52,7 @@ export default async function Home() {
               rowMd={3}
               rowSm={2}
               largeCard={true}
+              userIsPro={section.userIsPro}
             />
           ))
         ) : (

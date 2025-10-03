@@ -1,36 +1,50 @@
 import { ProjectWithCodebases } from "./actions";
+import { getUserSubscription } from "./subscription";
+import { currentUser } from "@clerk/nextjs/server";
 
-/**
- * Converts a database project to the format expected by the Section component
- */
 export function convertProjectToScreenShot(project: ProjectWithCodebases) {
   return {
     title: project.title,
-    image: "", // Not used in current implementation
-    link: `/detail/${project.id}`, // Link to detail page
-    appName: project.title, // Using title as app name
-    videoUrl: project.videoUrl || "", // Fallback to empty string if no video
-    isPro: false, // Default to false, can be enhanced later
+    image: "",
+    link: `/detail/${project.id}`,
+    appName: project.title,
+    videoUrl: project.videoUrl || "",
+    isPro: project.isProOnly,
   };
 }
 
-/**
- * Converts an array of database projects to the format expected by the Section component
- */
 export function convertProjectsToScreenShots(projects: ProjectWithCodebases[]) {
   return projects.map(convertProjectToScreenShot);
 }
 
-/**
- * Capitalizes the first letter of a string
- */
 export function capitalizeFirst(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-/**
- * Formats section names for display
- */
 export function formatSectionName(sectionKey: string): string {
   return capitalizeFirst(sectionKey) + " screens";
+}
+
+export function filterContentBySubscription<T extends { isPro: boolean }>(
+  content: T[],
+  isPro: boolean
+): T[] {
+  return content;
+}
+
+export async function getCurrentUserSubscription() {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return { isPro: false };
+    }
+
+    const subscription = await getUserSubscription(user.id);
+    return {
+      isPro: subscription?.isPro || false,
+    };
+  } catch (error) {
+    console.error("Error getting user subscription:", error);
+    return { isPro: false };
+  }
 }

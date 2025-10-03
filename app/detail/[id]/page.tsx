@@ -2,6 +2,7 @@ import React from "react";
 import { getProjectById } from "~/lib/actions";
 import { notFound } from "next/navigation";
 import DetailPageClient from "~/app/detail/[id]/detail-page-client";
+import { getCurrentUserSubscription } from "~/lib/utils";
 
 interface DetailPageProps {
   params: Promise<{
@@ -18,6 +19,15 @@ const DetailPage = async ({ params }: DetailPageProps) => {
 
     if (!project) {
       notFound();
+    }
+
+    // Check if user has access to Pro-only content
+    const { isPro } = await getCurrentUserSubscription();
+
+    // If project is Pro-only and user is not Pro, redirect or show access denied
+    if (project.isProOnly && !isPro) {
+      // For now, we'll still show the project but the client will handle the Pro-only UI
+      // In the future, you might want to redirect to a subscription page
     }
 
     // Process all codebases
@@ -67,6 +77,8 @@ struct ${project.title.replace(/\s+/g, "")}View: View {
       videoUrl: project.videoUrl || "/videos/onboarding-screen-1.mp4",
       description: project.description || "A SwiftUI screen implementation",
       markdownContent: codeContent,
+      isPro: project.isProOnly,
+      userIsPro: isPro,
     };
 
     return <DetailPageClient videoData={videoData} />;
