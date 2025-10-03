@@ -33,51 +33,37 @@ export async function POST(req: NextRequest) {
   }
 
   const session = event.data.object as Stripe.Checkout.Session;
-  const subscription = event.data.object as Stripe.Subscription;
 
   try {
     switch (event.type) {
       case "checkout.session.completed":
-        // Payment successful, create or update subscription
-        if (session.subscription && session.metadata?.userId) {
-          const stripeSubscription = (await stripe
-            .get()
-            .subscriptions.retrieve(
-              session.subscription as string
-            )) as Stripe.Subscription;
-
-          // Debug: Log the subscription object to see its structure
+        // One-time payment successful, grant lifetime Pro access
+        if (session.payment_status === "paid" && session.metadata?.userId) {
           console.log(
-            "Stripe subscription object:",
-            JSON.stringify(stripeSubscription, null, 2)
+            "One-time payment completed for user:",
+            session.metadata.userId
           );
-
-          // Get current period end with fallback
-          const currentPeriodEnd =
-            (stripeSubscription as unknown as { current_period_end?: number })
-              .current_period_end ||
-            Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
-
-          console.log("Current period end timestamp:", currentPeriodEnd);
 
           await db.subscription.upsert({
             where: { userId: session.metadata.userId },
             update: {
               stripeCustomerId: session.customer as string,
-              stripeSubscriptionId: stripeSubscription.id,
-              stripePriceId: stripeSubscription.items.data[0].price.id,
-              stripeCurrentPeriodEnd: new Date(currentPeriodEnd * 1000),
+              stripeSubscriptionId: session.id, // Use session ID for one-time payments
+              stripePriceId: "lifetime_pro", // Custom identifier for lifetime access
+              stripeCurrentPeriodEnd: new Date("2099-12-31"), // Far future date for lifetime access
               plan: "PRO",
               status: "ACTIVE",
+              paymentType: "ONE_TIME",
             },
             create: {
               userId: session.metadata.userId,
               stripeCustomerId: session.customer as string,
-              stripeSubscriptionId: stripeSubscription.id,
-              stripePriceId: stripeSubscription.items.data[0].price.id,
-              stripeCurrentPeriodEnd: new Date(currentPeriodEnd * 1000),
+              stripeSubscriptionId: session.id, // Use session ID for one-time payments
+              stripePriceId: "lifetime_pro", // Custom identifier for lifetime access
+              stripeCurrentPeriodEnd: new Date("2099-12-31"), // Far future date for lifetime access
               plan: "PRO",
               status: "ACTIVE",
+              paymentType: "ONE_TIME",
             },
           });
 
@@ -88,85 +74,11 @@ export async function POST(req: NextRequest) {
         }
         break;
 
-      case "invoice.payment_succeeded":
-        // Renew subscription
-        if (subscription.customer) {
-          const dbSubscription = await db.subscription.findUnique({
-            where: { stripeCustomerId: subscription.customer as string },
-            include: { user: true },
-          });
-
-          if (dbSubscription) {
-            await db.subscription.update({
-              where: { id: dbSubscription.id },
-              data: {
-                stripeCurrentPeriodEnd: new Date(
-                  ((subscription as unknown as { current_period_end?: number })
-                    .current_period_end ||
-                    Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60) * 1000
-                ),
-                status: "ACTIVE",
-              },
-            });
-
-            // Invalidate cache
-            await invalidateUserSubscriptionCache(dbSubscription.user.clerkId);
-          }
-        }
-        break;
-
-      case "customer.subscription.updated":
-        // Handle subscription updates
-        const dbSubscription = await db.subscription.findUnique({
-          where: { stripeSubscriptionId: subscription.id },
-          include: { user: true },
-        });
-
-        if (dbSubscription) {
-          let status: "ACTIVE" | "CANCELLED" | "PAST_DUE" | "INACTIVE" =
-            "INACTIVE";
-
-          if (subscription.status === "active") status = "ACTIVE";
-          else if (subscription.status === "canceled") status = "CANCELLED";
-          else if (subscription.status === "past_due") status = "PAST_DUE";
-
-          await db.subscription.update({
-            where: { id: dbSubscription.id },
-            data: {
-              status,
-              stripeCurrentPeriodEnd: new Date(
-                ((subscription as unknown as { current_period_end?: number })
-                  .current_period_end ||
-                  Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60) * 1000
-              ),
-            },
-          });
-
-          await invalidateUserSubscriptionCache(dbSubscription.user.clerkId);
-        }
-        break;
-
-      case "customer.subscription.deleted":
-        // Handle subscription cancellation
-        const canceledSubscription = await db.subscription.findUnique({
-          where: { stripeSubscriptionId: subscription.id },
-          include: { user: true },
-        });
-
-        if (canceledSubscription) {
-          await db.subscription.update({
-            where: { id: canceledSubscription.id },
-            data: {
-              status: "CANCELLED",
-              plan: "FREE",
-            },
-          });
-
-          await invalidateUserSubscriptionCache(
-            canceledSubscription.user.clerkId
-          );
-        }
-        break;
+      // Note: Subscription-related webhook events are no longer needed for one-time payments
+      // The following events are kept for reference but won't be triggered:
+      // - invoice.payment_succeeded (for recurring payments)
+      // - customer.subscription.updated (for subscription changes)
+      // - customer.subscription.deleted (for subscription cancellations)
 
       default:
         console.log(`Unhandled event type: ${event.type}`);

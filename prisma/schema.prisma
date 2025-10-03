@@ -39,6 +39,9 @@ model Subscription {
   stripePriceId String?
   stripeCurrentPeriodEnd DateTime?
   
+  // Payment type to distinguish between subscription and one-time payments
+  paymentType PaymentType @default(SUBSCRIPTION)
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -56,6 +59,11 @@ enum SubscriptionStatus {
   CANCELLED
   PAST_DUE
   TRIALING
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  ONE_TIME
 }
 
 model Project {

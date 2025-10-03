@@ -22,7 +22,11 @@ export async function getUserSubscription(userId: string) {
     ...user.subscription,
     isPro:
       user.subscription?.plan === "PRO" &&
-      user.subscription?.status === "ACTIVE",
+      user.subscription?.status === "ACTIVE" &&
+      (user.subscription?.paymentType === "ONE_TIME" ||
+        (user.subscription?.paymentType === "SUBSCRIPTION" &&
+          user.subscription?.stripeCurrentPeriodEnd &&
+          new Date(user.subscription.stripeCurrentPeriodEnd) > new Date())),
   };
 
   // Cache the result

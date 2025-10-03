@@ -66,8 +66,8 @@ const PRICING_PLANS: PricingPlan[] = [
   },
   {
     name: "Pro",
-    price: "$699",
-    period: "/year",
+    price: "$2,999",
+    period: " one-time",
     description: "Everything you need",
     buttonText: "Upgrade to Pro",
     isRecommended: true,

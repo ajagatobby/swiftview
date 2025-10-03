@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { stripe, STRIPE_PRO_PRICE_ID } from "~/lib/stripe";
+import { stripe } from "~/lib/stripe";
 import { db } from "~/lib/db";
 
 export async function GET() {
@@ -55,14 +55,22 @@ export async function POST() {
       return NextResponse.json({ url: session.url });
     }
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session for one-time payment
     const session = await stripe.get().checkout.sessions.create({
       customer_email: dbUser.email,
-      mode: "subscription",
+      mode: "payment",
       payment_method_types: ["card"],
       line_items: [
         {
-          price: STRIPE_PRO_PRICE_ID,
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "SwiftView Pro - Lifetime Access",
+              description:
+                "All mini apps, weekly releases, custom requests, source code, commercial license, and lifetime updates",
+            },
+            unit_amount: 299900, // $2,999 in cents
+          },
           quantity: 1,
         },
       ],
